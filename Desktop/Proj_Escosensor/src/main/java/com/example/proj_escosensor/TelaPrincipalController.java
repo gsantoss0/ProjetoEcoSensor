@@ -4,17 +4,29 @@ import com.fazecast.jSerialComm.SerialPort;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
+import javafx.stage.Window;
 import javafx.util.Duration;
+
+import java.io.File;
+import java.util.List;
 
 
 public class TelaPrincipalController {
+
+    int tempoGrafico = 0;
 
     @FXML
     private LineChart<Number, Number> linechartTemperatura;
@@ -28,6 +40,15 @@ public class TelaPrincipalController {
     @FXML
     private TableColumn colUmidade;
 
+    @FXML
+    private TableColumn colData;
+
+    @FXML
+    private TableView<Datacenter> tbvLogs;
+
+    private final ObservableList<Datacenter> listaLogs =
+            FXCollections.observableArrayList();
+
     private XYChart.Series<Number, Number> temperaturaSeries = new XYChart.Series<>();
     private XYChart.Series<Number, Number> umidadeSeries = new XYChart.Series<>();
 
@@ -35,6 +56,87 @@ public class TelaPrincipalController {
     private Timeline cronometro;
 
     public void initialize() {
+
+        lista();
+        configurarGraficos();
+
+        SerialPort[] portas = SerialPort.getCommPorts();
+
+        // ------------------ confirmar porta e conexao com o arduino
+        for (SerialPort porta : portas) {
+            System.out.println(
+                    porta.getSystemPortName()
+            );
+        }
+
+        SensorService.conectar();
+    }
+
+    public void btnNewCSV(ActionEvent actionEvent) {
+
+        if (listaLogs.isEmpty()) {
+            Utils.mostrarAlerta(
+                    "Atenção",
+                    "Não existem logs para exportar."
+            );
+
+            return;
+        }
+
+        FileChooser fileChooser = new FileChooser();
+
+        fileChooser.setTitle("Exportar arquivo CSV");
+
+        fileChooser.setInitialFileName("log.csv");
+
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter(
+                        "Arquivos CSV (*.csv)",
+                        "*.csv"
+                )
+        );
+
+        Window janela = tbvLogs.getScene().getWindow();
+
+        File arquivo = fileChooser.showSaveDialog(janela);
+
+        if (arquivo == null) {
+            return;
+        }
+
+        if (!arquivo.getName().toLowerCase().endsWith(".csv")) {
+
+            arquivo = new File(
+                    arquivo.getAbsolutePath() + ".csv"
+            );
+        }
+
+        try {
+
+            CSV.salvar(listaLogs, arquivo);
+
+            Utils.mostrarAlerta(
+                    "Exportação concluída",
+                    "Arquivo CSV exportado com sucesso!"
+            );
+
+        } catch (Exception e) {
+
+            Utils.mostrarAlerta(
+                    "Erro",
+                    "Não foi possível exportar o arquivo CSV.\n\n"
+                            + e.getMessage()
+            );
+        }
+    }
+
+    public void btnLigarVent(ActionEvent actionEvent) {
+    }
+
+    public void btnDesligarVent(ActionEvent actionEvent) {
+    }
+
+    public void configurarGraficos() {
 
         linechartTemperatura.getData().add(temperaturaSeries);
         linechartUmidade.getData().add(umidadeSeries);
@@ -63,41 +165,66 @@ public class TelaPrincipalController {
         yAxisUmid.setForceZeroInRange(false);
 
         // Atualizar os programa de 2 em 2 segundos
-        cronometro = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+        cronometro = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
 
-            Datacenter dados = SensorService.lerProximosDados();
+            Datacenter dados = SensorService.lerproximosDados();
 
-            // Adiciona os novos pontos nos gráficos
-            temperaturaSeries.getData().add(new XYChart.Data<>(dados.getTempo(), dados.getTemperatura()));
-            umidadeSeries.getData().add(new XYChart.Data<>(dados.getTempo(), dados.getUmidade()));
+            // Só atualiza o gráfico se o Arduino tiver enviado dados
+            if (dados != null) {
 
-            // Mantém apenas os últimos 10 pontos na memória
-            if (temperaturaSeries.getData().size() > 11) {
-                temperaturaSeries.getData().remove(0);
-                umidadeSeries.getData().remove(0);
+                tempoGrafico += 2;
 
-                // 4. Move a esteira do gráfico para acompanhar o tempo atual de forma suave
-                double novoMinimo = dados.getTempo() - 10;
-                double novoMaximo = dados.getTempo();
+                temperaturaSeries.getData().add(
+                        new XYChart.Data<>(
+                                tempoGrafico,
+                                dados.getTemperatura()
+                        )
+                );
 
-                xAxisTemp.setLowerBound(novoMinimo);
-                xAxisTemp.setUpperBound(novoMaximo);
+                umidadeSeries.getData().add(
+                        new XYChart.Data<>(
+                                tempoGrafico,
+                                dados.getUmidade()
+                        )
+                );
 
-                xAxisUmid.setLowerBound(novoMinimo);
-                xAxisUmid.setUpperBound(novoMaximo);
+                listaLogs.add(dados);
+
+                // Mantém apenas os últimos 11 pontos
+                if (temperaturaSeries.getData().size() > 11) {
+
+                    temperaturaSeries.getData().remove(0);
+                    umidadeSeries.getData().remove(0);
+
+                    double novoMinimo = tempoGrafico - 10;
+                    double novoMaximo = tempoGrafico;
+
+                    xAxisTemp.setLowerBound(novoMinimo);
+                    xAxisTemp.setUpperBound(novoMaximo);
+
+                    xAxisUmid.setLowerBound(novoMinimo);
+                    xAxisUmid.setUpperBound(novoMaximo);
+                }
             }
         }));
         cronometro.setCycleCount(Animation.INDEFINITE);
         cronometro.play();
     }
 
-    public void btnNew(ActionEvent actionEvent) {
+    public void lista() {
 
-    }
+        colData.setCellValueFactory(
+                new PropertyValueFactory<>("tempo")
+        );
 
-    public void btnLigarVent(ActionEvent actionEvent) {
-    }
+        colTemperatura.setCellValueFactory(
+                new PropertyValueFactory<>("temperatura")
+        );
 
-    public void btnDesligarVent(ActionEvent actionEvent) {
+        colUmidade.setCellValueFactory(
+                new PropertyValueFactory<>("umidade")
+        );
+
+        tbvLogs.setItems(listaLogs);
     }
 }
