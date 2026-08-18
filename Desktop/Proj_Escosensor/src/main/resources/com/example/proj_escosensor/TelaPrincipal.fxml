@@ -3,6 +3,7 @@
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" style="-fx-background-color: gray;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.proj_escosensor.TelaPrincipalController">
     <children>
@@ -16,9 +17,15 @@
                 <RowConstraints maxHeight="189.2" minHeight="10.0" prefHeight="189.2" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
-                <Label text="Temperatura" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
-                <Label text="Umidade" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
-                <LineChart fx:id="linechartTemperatura" animated="false" GridPane.rowIndex="1">
+                <Label text="Temperatura" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font></Label>
+                <Label text="Umidade" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font></Label>
+                <LineChart fx:id="linechartTemperatura" animated="false" legendVisible="false" GridPane.rowIndex="1">
                     <xAxis>
                         <NumberAxis side="BOTTOM" />
                     </xAxis>
@@ -26,7 +33,7 @@
                         <NumberAxis side="LEFT" />
                     </yAxis>
                 </LineChart>
-                <LineChart fx:id="linechartUmidade" animated="false" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <LineChart fx:id="linechartUmidade" animated="false" legendVisible="false" GridPane.columnIndex="1" GridPane.rowIndex="1">
                     <xAxis>
                         <NumberAxis side="BOTTOM" />
                     </xAxis>

@@ -3,6 +3,7 @@ package com.example.proj_escosensor;
 import com.fazecast.jSerialComm.SerialPort;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Service {
 
@@ -10,7 +11,7 @@ public class Service {
 
     public Service() {
 
-        porta = SerialPort.getCommPort("COM14"); // porta do arduino
+        porta = SerialPort.getCommPort("COM3"); // porta do arduino
 
         porta.setBaudRate(9600);
         porta.setNumDataBits(8);
@@ -44,7 +45,12 @@ public class Service {
             System.out.println(temperatura);
             System.out.println(umidade);
 
-            LocalDateTime tempo = LocalDateTime.now();
+            LocalDateTime tempoAgora = LocalDateTime.now();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+
+            String tempo = tempoAgora.format(formatter);
+
 
             return new Datacenter(tempo, temperatura, umidade);
         }

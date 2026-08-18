@@ -26,7 +26,7 @@ import java.util.List;
 
 public class TelaPrincipalController {
 
-    int tempoGrafico = 0;
+    int tempoGrafico = -2;
 
     @FXML
     private LineChart<Number, Number> linechartTemperatura;
@@ -148,21 +148,34 @@ public class TelaPrincipalController {
         NumberAxis yAxisTemp = (NumberAxis) linechartTemperatura.getYAxis();
         NumberAxis yAxisUmid = (NumberAxis) linechartUmidade.getYAxis();
 
+        yAxisTemp.setUpperBound(50);
+        yAxisUmid.setUpperBound(100);
+
+        yAxisTemp.setLowerBound(0);
+        yAxisUmid.setLowerBound(0);
+
+
+        yAxisTemp.setForceZeroInRange(false);
+        yAxisUmid.setForceZeroInRange(false);
+
+        yAxisTemp.setTickUnit(1);
+        yAxisUmid.setTickUnit(5);
+
         xAxisTemp.setAutoRanging(false);
         xAxisUmid.setAutoRanging(false);
 
-        // 3. Definir a janela visual fixa para mostrar 10 pontos (ajuste conforme o tempo do seu SensorService)
+        // 3. Definir a janela visual fixa para mostrar 10 pontos
         // Se o seu tempo aumenta de 1 em 1, exibe de 0 a 10.
         xAxisTemp.setLowerBound(0);
-        xAxisTemp.setUpperBound(10);
+        xAxisTemp.setUpperBound(11);
         xAxisUmid.setLowerBound(0);
-        xAxisUmid.setUpperBound(10);
+        xAxisUmid.setUpperBound(11);
 
         xAxisTemp.setTickUnit(1);
         xAxisUmid.setTickUnit(1);
 
-        yAxisTemp.setForceZeroInRange(false);
-        yAxisUmid.setForceZeroInRange(false);
+        yAxisTemp.setForceZeroInRange(true);
+        yAxisUmid.setForceZeroInRange(true);
 
         // Atualizar os programa de 2 em 2 segundos
         cronometro = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
@@ -190,8 +203,8 @@ public class TelaPrincipalController {
 
                 listaLogs.add(dados);
 
-                // Mantém apenas os últimos 11 pontos
-                if (temperaturaSeries.getData().size() > 11) {
+                // Mantém apenas os últimos 7 pontos
+                if (temperaturaSeries.getData().size() > 7) {
 
                     temperaturaSeries.getData().remove(0);
                     umidadeSeries.getData().remove(0);

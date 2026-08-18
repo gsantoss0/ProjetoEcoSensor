@@ -1,14 +1,12 @@
 package com.example.proj_escosensor;
 
-import java.time.LocalDateTime;
-
 public class Datacenter {
 
-    private LocalDateTime tempo;
+    private String tempo;
     private double temperatura;
     private double umidade;
 
-    public Datacenter(LocalDateTime tempo, double temperatura, double umidade) {
+    public Datacenter(String tempo, double temperatura, double umidade) {
 
         this.tempo = tempo;
         this.temperatura = temperatura;
@@ -31,11 +29,11 @@ public class Datacenter {
         this.umidade = umidade;
     }
 
-    public LocalDateTime getTempo() {
+    public String getTempo() {
         return tempo;
     }
 
-    public void setTempo(LocalDateTime tempo) {
+    public void setTempo(String tempo) {
         this.tempo = tempo;
     }
 }
