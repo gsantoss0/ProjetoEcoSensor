@@ -5,12 +5,14 @@ public class Datacenter {
     private String tempo;
     private double temperatura;
     private double umidade;
+    private String ventoinha;
 
     public Datacenter(String tempo, double temperatura, double umidade) {
 
         this.tempo = tempo;
         this.temperatura = temperatura;
         this.umidade = umidade;
+        this.ventoinha = "DESLIGADA";
     }
 
     public double getTemperatura() {
@@ -35,5 +37,13 @@ public class Datacenter {
 
     public void setTempo(String tempo) {
         this.tempo = tempo;
+    }
+
+    public String getVentoinha() {
+        return ventoinha;
+    }
+
+    public void setVentoinha(String ventoinha) {
+        this.ventoinha = ventoinha;
     }
 }
